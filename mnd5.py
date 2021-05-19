@@ -2,6 +2,7 @@ import random
 import numpy as np
 from scipy.stats import f, t
 import sklearn.linear_model as lm
+from time import process_time
 
 
 def main(m_tmp):
@@ -89,7 +90,7 @@ def main(m_tmp):
     print("\nРівняння регресії зі знайденими коефіцієнтами: \n" "y = {} + {}*x1 + {}*x2 + {}*x3 + {}*x1x2 + {}*x1x3 +"
           " {}*x2x3 + {}*x1x2x3 {}*x1^2 + {}*x2^2 + {}*x3^2".format(b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7], b[8],
                                                                     b[9], b[10]))
-
+    t3_start = process_time
     print("\nПЕРЕВІРКА ОДНОРІДНОСТІ ДИСПЕРСІЇ ЗА КРИТЕРІЄМ КОХРЕНА")
     print("Середні значення відгуку за рядками:", "\n", +y_average[0], y_average[1], y_average[2], y_average[3],
           y_average[4], y_average[5], y_average[6], y_average[7])
@@ -111,8 +112,9 @@ def main(m_tmp):
         main(m)
     else:
         print("Дисперсія однорідна")
-
+    t3_stop = process_time()
     # критерій Стьюдента
+    t2_start = process_time()
     print("\nПЕРЕВІРКА ЗНАЧУЩОСТІ КОЕФІЦІЄНТІВ ЗА КРИТЕРІЄМ СТЬЮДЕНТА")
     sb = sum(dispersions) / len(dispersions)
     sbs = (sb / (m * n)) ** (1/2)
@@ -140,11 +142,15 @@ def main(m_tmp):
         y_st.append(res[0] + res[1] * xn[1][i] + res[2] * xn[2][i] + res[3] * xn[3][i] + res[4] * x1x2_norm[i] \
                     + res[5] * x1x3_norm[i] + res[6] * x2x3_norm[i] + res[7] * x1x2x3_norm[i])
     print("\nЗначення з отриманими коефіцієнтами:\n", y_st)
+    t2_stop = process_time()
+    t1_start = process_time()
 
     print("\nПЕРЕВІРКА АДЕКВАТНОСТІ ЗА КРИТЕРІЄМ ФІШЕРА")
     Sad = m * sum([(y_st[i] - y_average[i]) ** 2 for i in range(n)]) / (n - d)
     Fp = Sad / sb
     f4 = n - d
+    t1_stop = process_time()
+    print("Час ФІШЕРА{},КРИТЕРІЄМ СТЬЮДЕНТА{},КРИТЕРІЄМ КОХРЕНА{}".format(t1_stop-t1_start,t2_stop-t2_start,t3_stop-t3_start))
 
     if Fp > f.ppf(q=0.95, dfn=f4, dfd=F3):
         print("Рівняння регресії неадекватно оригіналу при рівні значимості 0.05")
